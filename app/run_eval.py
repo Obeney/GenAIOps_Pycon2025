@@ -18,9 +18,13 @@ import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import json
+import re
+from typing import Literal
 
 import mlflow
 from dotenv import load_dotenv
+from mlflow.entities import Feedback, SpanType
+from mlflow.genai.judges import make_judge
 from mlflow.genai.scorers import (
     Correctness,
     Guidelines,
@@ -28,6 +32,7 @@ from mlflow.genai.scorers import (
     RetrievalGroundedness,
     RetrievalRelevance,
     Safety,
+    scorer,
 )
 
 from app.llm_provider import describe, get_judge_model_uri
@@ -67,6 +72,26 @@ def load_eval_dataset(path=DATASET_PATH):
     ]
 
 
+def _numeros(texto: str) -> set[str]:
+    """'1:100.000' → {'1', '100000'}; '85%' → {'85'}; '2.5' → {'25'}"""
+    return {re.sub(r"[.,]", "", n) for n in re.findall(r"\d+(?:[.,]\d+)*", texto or "")}
+
+
+@scorer
+def numeros_respaldados(inputs: dict, outputs: str, trace) -> Feedback:
+    """¿Todas las cifras de la respuesta aparecen en los fragmentos recuperados o en la pregunta?"""
+    contexto = inputs.get("question", "")
+    for span in trace.search_spans(span_type=SpanType.RETRIEVER):
+        for doc in span.outputs or []:
+            contexto += " " + (doc.get("page_content") or "")
+    sin_respaldo = sorted(_numeros(outputs) - _numeros(contexto))
+    return Feedback(
+        value=not sin_respaldo,
+        rationale=f"Cifras sin respaldo en el contexto: {sin_respaldo}" if sin_respaldo
+        else "Todas las cifras de la respuesta están en el contexto recuperado o en la pregunta.",
+    )
+
+
 def get_scorers(judge_model: str):
     """
     Jueces predefinidos de MLflow + guías propias en lenguaje natural.
@@ -93,6 +118,26 @@ def get_scorers(judge_model: str):
             ),
             model=judge_model,
         ),
+        Guidelines(
+            name="no_inventa_leyenda",
+            guidelines=(
+                "La respuesta no debe inventar categorías, códigos o umbrales de la leyenda "
+                "CORINE Land Cover que no estén en los documentos oficiales del IDEAM."
+            ),
+            model=judge_model,
+        ),
+        make_judge(
+            name="claridad_tecnica",
+            instructions=(
+                "Evalúa si la respuesta {{ outputs }} a la pregunta {{ inputs }} es clara y "
+                "comprensible para un intérprete de coberturas de la tierra con formación media: "
+                "usa la terminología técnica correctamente, la explica cuando hace falta y está "
+                "bien organizada. Responde 'yes' si lo es y 'no' si no."
+            ),
+            feedback_value_type=Literal["yes", "no"],
+            model=judge_model,
+        ),
+        numeros_respaldados,
     ]
     selected = [n.strip() for n in os.getenv("EVAL_SCORERS", "").split(",") if n.strip()]
     if selected:
