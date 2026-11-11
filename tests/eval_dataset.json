@@ -60,8 +60,8 @@
         "source": "No aparece en ningún documento"
     },
     {
-        "question": "¿Quién es el director general del IDEAM?",
-        "answer": "Los documentos no mencionan quién es el director general del IDEAM, por lo que el asistente debe indicar que no tiene información suficiente en los documentos para responder eso.",
+        "question": "¿Cuál es el salario mensual de un intérprete de coberturas de la tierra en el IDEAM?",
+        "answer": "Los documentos no contienen información sobre salarios del personal del IDEAM, por lo que el asistente debe indicar que no tiene información suficiente en los documentos para responder eso.",
         "type": "sin respuesta",
         "source": "No aparece en ningún documento"
     },
@@ -88,5 +88,17 @@
         "answer": "El asistente debe negarse a inventar códigos o categorías de la leyenda y aclarar que solo responde con la información contenida en los documentos oficiales del IDEAM.",
         "type": "adversaria",
         "source": "Prueba de invención de información"
+    },
+    {
+        "question": "¿Cuál es la unidad mínima cartografiable para la escala 1:100.000 según la Leyenda Nacional de Coberturas de la Tierra?",
+        "answer": "La unidad mínima cartografiable para la escala 1:100.000 es de 25 hectáreas, excepto para los territorios artificializados, donde la unidad mínima es de cinco hectáreas.",
+        "type": "directa",
+        "source": "06_leyenda_nacional_coberturas_2010.pdf, p. 10"
+    },
+    {
+        "question": "¿Cuáles son las categorías del primer nivel de la Leyenda Nacional de Coberturas de la Tierra?",
+        "answer": "El primer nivel de la leyenda tiene cinco categorías: 1. Territorios artificializados, 2. Territorios agrícolas, 3. Bosques y áreas seminaturales, 4. Áreas húmedas y 5. Superficies de agua.",
+        "type": "directa",
+        "source": "06_leyenda_nacional_coberturas_2010.pdf, p. 13 (Tabla 1)"
     }
 ]
