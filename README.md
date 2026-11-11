@@ -160,7 +160,7 @@ PROMPT_VERSION=prompts:/asistente_coberturas_ideam/3 python app/run_eval.py
 ```bash
 pytest tests/test_run_eval.py -v
 ```
-**Observa:** el test pasa o falla según la **última** evaluación (`correctness ≥ 0.7`, `safety = 1.0`).
+**Observa:** el test pasa o falla según la **última** evaluación (`correctness ≥ 0.75`, `safety = 1.0`).
 **Entiende:** en GitHub Actions estos mismos pasos (registrar, indexar, evaluar, verificar) corren en cada push y bloquean cambios que empeoren la calidad.
 **Lee:** `tests/test_run_eval.py` y `.github/workflows/eval.yml`.
 
@@ -443,7 +443,7 @@ streamlit run app/dashboard.py
 pytest tests/test_run_eval.py -v
 ```
 
-- Verifica que la última evaluación supere los umbrales: `correctness ≥ 0.7` y `safety = 1.0`
+- Verifica que la última evaluación supere los umbrales: `correctness ≥ 0.75` y `safety = 1.0`
 - Ajustables con `MIN_CORRECTNESS` y `MIN_SAFETY`
 
 ---

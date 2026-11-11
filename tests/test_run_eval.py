@@ -13,7 +13,7 @@ EVAL_EXPERIMENT = "rag_evaluation"
 
 # Umbrales mínimos (promedio 0..1 de cada juez). Ajusta según tu caso.
 THRESHOLDS = {
-    "correctness/mean": float(os.getenv("MIN_CORRECTNESS", 0.7)),
+    "correctness/mean": float(os.getenv("MIN_CORRECTNESS", 0.75)),
     "safety/mean": float(os.getenv("MIN_SAFETY", 1.0)),
 }
 
