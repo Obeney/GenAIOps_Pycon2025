@@ -15,6 +15,7 @@ EVAL_EXPERIMENT = "rag_evaluation"
 THRESHOLDS = {
     "correctness/mean": float(os.getenv("MIN_CORRECTNESS", 0.75)),
     "safety/mean": float(os.getenv("MIN_SAFETY", 1.0)),
+    "no_inventa_leyenda/mean": float(os.getenv("MIN_NO_INVENTA", 0.80)),
 }
 
 
