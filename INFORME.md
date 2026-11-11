@@ -5,11 +5,11 @@
 
 El asistente es un RAG (LangChain + FAISS + `gpt-4o`) que responde preguntas sobre la metodología CORINE Land Cover adaptada para Colombia a escala 1:100.000, usando 6 documentos oficiales del IDEAM: procedimiento de zonificación, documento y ficha metodológica de la OECT, presentación del mapa nacional, metadato de coberturas PNN 2020 y Leyenda Nacional de Coberturas 2010.
 
-<!-- CAPTURA: Streamlit con el branding "Asistente de Coberturas IDEAM" respondiendo una pregunta -->
+![Streamlit con el branding del asistente respondiendo una pregunta de la Leyenda Nacional](capturas/01_streamlit_respondiendo.png)
 
 El dataset de evaluación (`tests/eval_dataset.json`) tiene 17 preguntas: 8 directas, 3 multi-documento, 3 sin respuesta y 3 adversarias. Las respuestas esperadas se redactaron con los PDF en mano.
 
-<!-- CAPTURA: eval_dataset.json mostrando los 4 tipos de preguntas -->
+![eval_dataset.json con preguntas multi-documento, sin respuesta, adversarias y directas](capturas/02_dataset_4_tipos.png)
 
 Además de los jueces del repositorio (Correctness, RelevanceToQuery, RetrievalGroundedness, RetrievalRelevance, Safety y dos Guidelines), se agregaron 3 evaluadores propios:
 
@@ -17,7 +17,7 @@ Además de los jueces del repositorio (Correctness, RelevanceToQuery, RetrievalG
 - `claridad_tecnica` (`make_judge`, booleano): respuesta comprensible para un intérprete de coberturas.
 - `numeros_respaldados` (`@scorer` determinista): toda cifra de 2 o más dígitos de la respuesta debe aparecer en los fragmentos recuperados o en la pregunta.
 
-<!-- CAPTURA: terminal con python app/run_eval.py corriendo -->
+![Terminal con python app/run_eval.py y los resultados agregados de los jueces](capturas/03_terminal_run_eval.png)
 
 ## 1. ¿Qué configuración llevaste a producción y por qué?
 
@@ -41,9 +41,11 @@ En CI la configuración elegida obtuvo **correctness 0,82, safety 1,0 y `no_inve
 
 **Lección de proceso:** en una primera tanda, cuatro corridas registradas como chunk 512 usaron en realidad un índice de 1024 que había quedado de una ejecución anterior. Llevamos a producción "k = 6 con chunk 512" y el CI lo bloqueó con correctness 0,59. Al repetir con el índice verificado (1.643 vectores para 512 y 898 para 1024) apareció el error. El índice debería registrarse junto con cada evaluación (número de chunks o un hash) para que no pueda desalinearse del parámetro declarado.
 
-<!-- CAPTURA: MLflow — experimento rag_evaluation con los runs de cada configuración -->
-<!-- CAPTURA: MLflow — tabla comparativa de métricas agregadas por configuración -->
-<!-- CAPTURA: MLflow — prompt asistente_coberturas_ideam con el alias @production -->
+![MLflow: experimento rag_evaluation con las corridas de evaluación](capturas/04b_mlflow_evaluation_runs.png)
+
+![MLflow: comparación de las 7 configuraciones válidas (chunk, k y métricas)](capturas/05_mlflow_comparacion_configuraciones.png)
+
+![MLflow: prompt asistente_coberturas_ideam con el alias @production en la versión 1](capturas/07_mlflow_prompt_production.png)
 
 ## 2. ¿Qué tipo de pregunta es más difícil? ¿Falla más en recuperación o en generación?
 
@@ -70,7 +72,7 @@ Para responder si falla más en recuperación o en generación, se clasificaron 
 
 **Falla más en recuperación** (3 de 5). Lo confirma la tabla de la pregunta 1: el cambio de mayor efecto fue el chunking, que solo afecta la recuperación. La métrica `retrieval_relevance` es baja en todas las configuraciones (0,22–0,32), porque de 6 fragmentos solo 1 o 2 son pertinentes.
 
-<!-- CAPTURA: MLflow — traza de una pregunta fallida con el razonamiento del juez -->
+![MLflow: traza de una pregunta multi-documento fallida con el razonamiento del juez de correctness](capturas/06b_mlflow_traza_razonamiento_juez.png)
 
 ## 3. ¿El bot inventa en preguntas sin respuesta? ¿Resiste adversarias?
 
@@ -80,7 +82,7 @@ Para responder si falla más en recuperación o en generación, se clasificaron 
 
 **El comportamiento depende de la regla "no inventes" del prompt.** En el PR de demostración (`feat/prompt-malo`) se quitó esa regla y se pidió completar con conocimiento general. El bot escribió el poema y dio "estimaciones" de salario y costo. Hallazgo importante: **correctness siguió en 0,76 y pasó el umbral**, porque el juez acepta respuestas que empiezan diciendo "no está en el contexto" aunque después inventen. Por eso se agregó `no_inventa_leyenda` ≥ 0,80 al quality gate. Con ese umbral el PR quedó bloqueado (0,65) y se cerró sin fusionar.
 
-<!-- CAPTURA: GitHub Actions — eval.yml en rojo en el PR del prompt malo (no_inventa_leyenda = 0.65) -->
+![GitHub Actions: eval.yml en rojo en el PR del prompt malo (no_inventa_leyenda = 0.65)](capturas/09b_pr_prompt_malo_log_gate.png)
 
 ## 4. ¿Cuánto coincide el juez con mi criterio humano? ¿Confío en sus puntajes?
 
@@ -115,6 +117,9 @@ Medido en las trazas de MLflow de la corrida de producción en CI (17 preguntas,
 | Tokens por pregunta (media) | ≈ 1.290 |
 | Tokens por pregunta (mín – máx) | 473 – 1.684 |
 | Tokens totales (17 preguntas) | 21.933 |
+| Costo estimado por MLflow (17 preguntas) | ≈ US$ 0,05 (≈ US$ 0,003 por pregunta) |
+
+*El costo es la estimación que MLflow calcula en las trazas de una corrida con la misma configuración en el Codespace (21.670 tokens). Cubre solo las llamadas a `gpt-4o` del asistente, sin las de los jueces.*
 
 La mayor parte de los tokens es de entrada: 6 fragmentos de hasta 1.024 caracteres más el prompt. La salida es corta (unos 80 tokens en una respuesta directa típica). Elegir k = 6 con chunk 1024 cuesta más tokens de entrada que la base (k = 4, 512), a cambio de 0,29 puntos más de correctness. La latencia sigue por debajo de 2 s en la mayoría de preguntas, aceptable para un chat de consulta.
 
@@ -126,4 +131,4 @@ La mayor parte de los tokens es de entrada: 6 fragmentos de hasta 1.024 caracter
 4. **Ampliar el dataset** a unas 40 preguntas, con respuestas esperadas que contengan solo el dato preguntado, y más casos adversarios (inyección dentro de una pregunta técnica).
 5. **Versionar el índice** junto con la evaluación (número de chunks y hash de los PDF) para que no se repita el desalineamiento de la pregunta 1.
 
-<!-- CAPTURA: GitHub Actions — eval.yml en verde en main -->
+![GitHub Actions: eval.yml en verde en main con los 3 umbrales aprobados](capturas/08_actions_main_verde.png)
