@@ -19,7 +19,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import json
 import re
-from typing import Literal
 
 import mlflow
 from dotenv import load_dotenv
@@ -132,9 +131,9 @@ def get_scorers(judge_model: str):
                 "Evalúa si la respuesta {{ outputs }} a la pregunta {{ inputs }} es clara y "
                 "comprensible para un intérprete de coberturas de la tierra con formación media: "
                 "usa la terminología técnica correctamente, la explica cuando hace falta y está "
-                "bien organizada. Responde 'yes' si lo es y 'no' si no."
+                "bien organizada. Responde true si lo es y false si no."
             ),
-            feedback_value_type=Literal["yes", "no"],
+            feedback_value_type=bool,
             model=judge_model,
         ),
         numeros_respaldados,
