@@ -30,9 +30,11 @@ from app.tracking import CHAT_EXPERIMENT, init_tracking, log_user_feedback
 
 EVAL_DATASET = "tests/eval_dataset.json"
 FALLBACK_EXAMPLES = [
-    "¿Qué beneficios de salud ofrece la empresa?",
-    "¿Qué incluye el programa PerksPlus?",
-    "¿Cuáles son las responsabilidades de un analista de datos?",
+    "¿Qué es el sistema de clasificación CORINE Land Cover adaptado para Colombia?",
+    "¿Cuáles son las clases del primer nivel de la leyenda CORINE Land Cover para Colombia?",
+    "¿Qué porcentaje mínimo libre de nubes deben tener las imágenes usadas en la interpretación?",
+    "¿Qué controles de calidad se aplican a la interpretación de coberturas de la tierra?",
+    "¿Para qué periodos se han generado mapas nacionales de coberturas de la tierra?",
 ]
 
 
@@ -159,8 +161,9 @@ def render_sidebar():
 
 # ---------- Chat ----------
 
-def render_chat(title="🤖 Asistente de Recursos Humanos",
-                subtitle="Pregunta sobre beneficios, políticas y roles de Contoso Electronics."):
+def render_chat(title="🗺️ Asistente de Coberturas IDEAM",
+                subtitle="Pregunta sobre la metodología CORINE Land Cover adaptada para Colombia "
+                         "escala 1:100.000 (IDEAM)."):
     config = render_sidebar()
 
     st.title(title)

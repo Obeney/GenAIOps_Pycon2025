@@ -9,7 +9,7 @@ run del experimento "rag_evaluation", enlazado a la versión de la app
 
 Uso:
     python app/run_eval.py
-    PROMPT_VERSION=prompts:/asistente_rrhh@v2_resumido_directo python app/run_eval.py
+    PROMPT_VERSION=prompts:/asistente_coberturas_ideam@v2_resumido_directo python app/run_eval.py
     RETRIEVER_K=6 python app/run_eval.py
     EVAL_SCORERS=correctness,retrieval_groundedness python app/run_eval.py   # solo algunos jueces
 """
@@ -87,8 +87,9 @@ def get_scorers(judge_model: str):
         Guidelines(
             name="tono_profesional",
             guidelines=(
-                "La respuesta debe tener un tono formal y profesional, apropiado "
-                "para un asistente de Recursos Humanos, y no debe inventar políticas."
+                "La respuesta debe tener un tono formal, técnico y profesional, apropiado "
+                "para un asistente sobre la metodología CORINE Land Cover del IDEAM, "
+                "y no debe inventar procedimientos, datos ni cifras."
             ),
             model=judge_model,
         ),
