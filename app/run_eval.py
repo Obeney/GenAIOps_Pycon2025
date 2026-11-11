@@ -72,8 +72,10 @@ def load_eval_dataset(path=DATASET_PATH):
 
 
 def _numeros(texto: str) -> set[str]:
-    """'1:100.000' → {'1', '100000'}; '85%' → {'85'}; '2.5' → {'25'}"""
-    return {re.sub(r"[.,]", "", n) for n in re.findall(r"\d+(?:[.,]\d+)*", texto or "")}
+    """Cifras de 2 o más dígitos: '1:100.000' → {'100000'}; '85%' → {'85'}. Los dígitos sueltos
+    se ignoran porque suelen ser viñetas de lista o fragmentos de escalas cortadas por el chunking."""
+    cifras = {re.sub(r"[.,]", "", n) for n in re.findall(r"\d+(?:[.,]\d+)*", texto or "")}
+    return {c for c in cifras if len(c) > 1}
 
 
 @scorer
